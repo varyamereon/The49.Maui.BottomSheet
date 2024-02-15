@@ -1,5 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
+using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Platform;
 using UIKit;
@@ -20,6 +21,19 @@ public class BottomSheetViewController : UIViewController
         {
             SheetPresentationController.Delegate = new BottomSheetControllerDelegate(_sheet);
         }
+    }
+
+    public override void ViewDidAppear(bool animated)
+    {
+        base.ViewDidAppear(animated);
+
+        var size = View.Frame.Size;
+
+        var cv = View.Subviews.First(v => v is BottomSheetContainer);
+        cv.Frame = new CGRect(0, 0, size.Width, size.Height);
+        
+        _sheet.Arrange(cv.Frame.ToRectangle());
+        Layout();
     }
 
     public override void ViewDidLoad()
@@ -82,6 +96,20 @@ public class BottomSheetViewController : UIViewController
     public override void ViewDidLayoutSubviews()
     {
         base.ViewDidLayoutSubviews();
+
+        var size = View.Frame.Size;
+        
+        if (View.Subviews.FirstOrDefault(v => v is BottomSheetContainer) is BottomSheetContainer cv)
+        {
+            cv.Frame = new CGRect(0, 0, size.Width, size.Height);
+            _sheet.Arrange(cv.Frame.ToRectangle());
+            
+            UIView.Animate(0.2, () =>
+            {
+                cv.LayoutIfNeeded();
+            });
+        }
+        
         Layout();
     }
 
